@@ -22,5 +22,7 @@
         <button type="submit">작성</button>
     </form>
     {{-- old는 세션에 직전의 값이 있없는지 확인, password는 실패하면 지워야하니까 old안씀 --}}
+    {{-- old()는 넘어온값을 세션에 저장해 두는데 validation에 통과하지 못했을 때 양식에
+        이전에 입력한 값을 다시 넣어주기 위해 사용--}}
 </body>
 </html>

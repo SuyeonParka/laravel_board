@@ -49,6 +49,9 @@ class UserController extends Controller
                 ->with('errors', collect($errors));
         }
 
+        //Request $req는 blade파일에 있는 form을 통해 넘어오는 값을 담고
+        //$data[]부분 보면 form에서 넘어온 각각의 값이 $data에 배열로 저장돼서
+        //$data의 배열이 만들어지고 그 배열을 insert한 결과가 $user에 담김
         
         //회원가입 완료 로그인 페이지로 이동
         return redirect()

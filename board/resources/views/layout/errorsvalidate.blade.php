@@ -4,3 +4,4 @@
         <div>{{$error}}</div>
     @endforeach
 @endif
+{{-- $errors 변수에 저장된 모든 오류 메시지를 출력 --}}
