@@ -1,11 +1,18 @@
 <?php
-
+/*************************************
+ * 프로젝트명 : laravel_board
+ * 디렉토리   : Controllers
+ * 파일명     : BoardsController.php
+ * 이력       : v001 0526 SY.Park new
+ *              v002 0530 SY.Park 유효성 체크 추가
+ * 버전(소스코드 리뷰 후 마다 버전 상승)
+ *************************************/
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Boards;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Validator; //v002 add
 
 class BoardsController extends Controller
 {
@@ -33,6 +40,12 @@ class BoardsController extends Controller
     public function create()
     {
         return view('write');
+
+        // 수정할 때 이런 방식으로 이력 남겨두기(여러줄일경우 이렇겡)
+        //v002 update start
+        // return view('write');
+        return view('index');
+        //v002 update end
     }
 
     /**
@@ -43,6 +56,16 @@ class BoardsController extends Controller
      */
     public function store(Request $req)
     {
+
+        //v002 add start
+        //validate는 에러가 뜨면 자동으로 view에 에러를 보내줌
+        $req->validate([
+            'title' => 'required|between:3,30'
+            ,'content' => 'required|max:1000'
+        ]);
+        //v002 add end 
+
+
         //유저가 어떤 매개를 사용했는지 등의 모든 정보
         //엘로퀀트로 하면 create랑 update는 자동
         //??new하는 이유 insert할 때 사용
@@ -53,7 +76,6 @@ class BoardsController extends Controller
         $boards = new Boards([
             'title' => $req->input('title')
             ,'content' => $req->input('content')
-            ,'hits' => 0
         ]);
 
         $boards->save();
@@ -70,6 +92,7 @@ class BoardsController extends Controller
      */
     public function show($id)
     {
+        // 업데이트
         // + 조회할때마다 조회수 증가
         // 넘어오는 값이 pk 무조건 하나만 넘어올거라서
         // find안에 쿼리가 다 들어있음
@@ -116,16 +139,55 @@ class BoardsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
+    {   
+        //찍어보면 id는 url에 있음
+        // return var_dump($request);
+        //**v002 add start
+        //쌤이한거 id를 request에 병합
+        //그리고 다시 var_dump해보면 id가 찍힘
+        $arr = ['id' => $id];
+        // $request->merge($arr);
+        $request->request->add($arr);
+
+        // return var_dump($request);
+        
+        //기획단계에서 뭘 체크할지 짜야됨(개요설계서에서 정함, 상세설계서에선 더 정확하게)
+        // $request->validate([
+        //     'id'        => 'required|integer'
+        //     ,'title'    => 'required|between:3,30'
+        //     ,'content'  => 'required|max:1000'
+        // ]);
+
+        /**유효성 검사 방법2
+        
+        ------------------------------------**/
+        //---------------------------------------------
+        //**v002 add end
+        $validator = Validator::make(
+        $request->only('id', 'title', 'content')
+        ,[
+            'id'        => 'required|integer'
+            ,'title'    => 'required|between:3,30'
+            ,'content'  => 'required|max:1000'
+        ]);
+
+        if($validator->fails()) {
+            return redirect()
+            // 우리한테 요청한 페이지로 다시 되돌아감(여기선 edit페이지)
+                ->back() 
+                ->withErrors($validator)
+                // 우리가 받은 리퀘스트 객체를 세션에다 올리고 그 세션을 가져옴 
+                ->withInput($request->only('title', 'content')); 
+        }
         //orm은 model객체를 써야 orm
         //지금update구문 select??
         //엘로퀀트랑 orm 차이 : 우리가 만든 모델 객체(Boards)를 사용했냐(orm) 안했냐의 차이
         //DB를 사용해서 한거는 orm이 아님 라라벨에서 지원해주는 기능 사용
         //DB는 쿼리빌더로 db에 질의를 한거
 
-        $boards = Boards::find($id);
-        //아래의 쿼리빌더를 orm방식으로 변환한 것(엘로퀀트 모델객체를 이용함, 그걸로 db작업을 함)
         $result = Boards::find($id);
+        //아래의 쿼리빌더를 orm방식으로 변환한 것(엘로퀀트 모델객체를 이용함, 그걸로 db작업을 함)
+        // $result = Boards::find($id);
         $result->title = $request->title;
         $result->content = $request->content;
         //주의,db에 문제 없이 쿼리가 커밋됐을 때
@@ -141,7 +203,8 @@ class BoardsController extends Controller
         //redirect 사용(url이 바껴야된다고 하면 무조건 redirect, ex)로그인하고 메인페이지 가야되는데 url이 로그인url로 있음안됨(view)
         //여기서 with필요없음 : show에서 id만 받게 되니까 id는 세그먼트 파라미터(로 board의 값을 받음)
         //니까 세그먼트 파라미터만 받으면 됨
-        return redirect('/boards/'.$id)->with('data', Boards::findOrFail($id));
+        // return redirect('/boards/'.$id)->with('data', Boards::findOrFail($id));
+        return redirect()->route('boards.show', ['board' => $id]);
         //다른 방법
         // return redirect()->route('boards.show', ['board' => $id])->with('data', Boards::findOrFail($id));
         // return view('detail')->with('data', Boards::findOrFail($id));
