@@ -22,7 +22,14 @@ class BoardsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
+    {   
+        //로그인 체크(url에 boards쳤을 때 들어가지는거 막기)
+        //지금들어온 사람이 게스트인지 인증된 사람인지 true, false(로그인된 사람)으로 나타남
+        //로그인 안된 상태에서 url에 boards들어가면 login페이지로 돌아감
+        if (auth()->guest()) {
+            return redirect()->route('users.login');
+        }
+        //$this->loginchk();이렇게 메소드로 넣으니까 안됨(밑에 메소드 만든거 있음)
         //데이터 받는 법
         //all:delete돼있는 건 값을 자동으로 제외해줌
         //필요없는 데이터도 가져와줌
@@ -249,4 +256,11 @@ class BoardsController extends Controller
 
         // return view('list');
     }
+
+    // function loginchk() {
+    //     if(auth()->guest()) {
+    //         return redirect()->route('user.login');
+    //     }
+    // }
 }
+

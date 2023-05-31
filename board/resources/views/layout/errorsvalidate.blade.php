@@ -5,3 +5,8 @@
     @endforeach
 @endif
 {{-- $errors 변수에 저장된 모든 오류 메시지를 출력 --}}
+
+{{-- 우리가 설정한 에러 --}}
+@if(session()->has('error'))
+    <div>{!!session('error')!!}</div>
+@endif
