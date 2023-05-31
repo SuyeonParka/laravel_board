@@ -13,13 +13,14 @@ class ApiListController extends Controller
     }
 
     //post로 올거라서 리퀘스트가 있음
+    //post는 무조건 값이 넘어와서 이거를 리퀘스트에 담아둠
     function postList(Request $req) {
         //유효성 체크 필요
         //유저 인증 절차
         //토큰 저장용 데이터베이스 따로 필요
 
         //input안적어도 됨
-        $boards = new Boards([
+        $boards = new Boards([ 
             //key=title, content(우리가 보내줘야할 값), 옆이 value
             'title' => $req->title
             ,'content' => $req->content
