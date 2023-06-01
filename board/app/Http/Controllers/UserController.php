@@ -144,6 +144,7 @@ class UserController extends Controller
 
           //기존 데이터 가져오기
         $baseUser  = User::find(Auth::User()->id);
+        // $baseUser  = Auth::User();
         
         //기존 비번 틀렸을 때 에러처리
         if(!Hash::check($req->password, $baseUser->password)) {
