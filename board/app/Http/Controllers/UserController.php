@@ -12,14 +12,64 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
+
 
 class UserController extends Controller
 {
     function login() {
+
+        $arr['key'] = 'test';
+        $arr['kim'] = 'park';
+        Log::emergency('emergency', $arr);
+        Log::alert('alert', $arr);
+        Log::critical('critical', $arr);
+        Log::error('error', $arr);
+        Log::warning('warning', $arr);
+        Log::notice('notice', $arr);
+        Log::info('info', $arr);
+        Log::debug('debug', $arr);
+
         return view('login');
     }
 
+    function loginpost(Request $req) {
+
+        $req->validate([
+            'email'    => 'required|email|max:100'  
+            //required_unless는 두개를 비교해서 안맞으면 에러냄
+            ,'password' => 'required|regex:/^(?=.*[a-zA-Z])(?=.*[!@#$%^*-])(?=.*[0-9]).{8,20}$/'
+        ]);
+
+        // 유저정보 습득
+        //req에 email을 넣어줌
+        //이메일이 리퀘스트 이메일과 같은 걸 젤 첫번째 거를 가져오겠다는 뜻
+        $user = User::where('email', $req->email)->first();
+        if(!$user || !(Hash::check($req->password, $user->password))){
+            Log::debug($req->password . ' : '.$user->password);
+            //일반 str변수로박다다
+            $errors = '아이디와 비밀번호를 확인하세요';
+            //errors는 특별한 문구라서 error로 변경
+            return redirect()->back()->with('error', $errors);
+        }
+        //유저 인증작업
+        //위에서 우리가 가져온 user값 사용
+        //알아서 session에 필요한 정보를 올려줌
+        Auth::login($user);
+        if(Auth::check()) {
+            //session에 넣기
+            //session에 인증된 회원 pk 등록, session에 id넣음
+            //session에 id저장하는 거를 처음에 배열로 넣어서 loginpost를 못가져왔던 거였음
+            session($user->only('id'));
+            //intended는 아얘 새로운 redirect를 함(필요없는 정보 싹다 클리어)
+            return redirect()->intended(route('boards.index'));
+        } else {
+            $errors = '인증작업 에러';
+            return redirect()->back()->with('error', $errors);
+        }
+    }
+    
     function registration() {
         return view('registration');
     }
@@ -60,39 +110,7 @@ class UserController extends Controller
             ->with('success', '회원가입을 완료했습니다.<br>가입하신 아이디와 비밀번호로 로그인해 주세요.');
     }
 
-    function loginpost(Request $req) {
-        $req->validate([
-            'email'    => 'required|email|max:100'  
-            //required_unless는 두개를 비교해서 안맞으면 에러냄
-            ,'password' => 'required|regex:/^(?=.*[a-zA-Z])(?=.*[!@#$%^*-])(?=.*[0-9]).{8,20}$/'
-        ]);
-
-        // 유저정보 습득
-        //req에 email을 넣어줌
-        //이메일이 리퀘스트 이메일과 같은 걸 젤 첫번째 거를 가져오겠다는 뜻
-        $user = User::where('email', $req->email)->first();
-        if(!$user || !(Hash::check($req->password, $user->password))){
-            //일반 str변수로박다다
-            $errors = '아이디와 비밀번호를 확인하세요';
-            //errors는 특별한 문구라서 error로 변경
-            return redirect()->back()->with('error', $errors);
-        }
-        //유저 인증작업
-        //위에서 우리가 가져온 user값 사용
-        //알아서 session에 필요한 정보를 올려줌
-        Auth::login($user);
-        if(Auth::check()) {
-            //session에 넣기
-            //session에 인증된 회원 pk 등록, session에 id넣음
-            //session에 id저장하는 거를 처음에 배열로 넣어서 loginpost를 못가져왔던 거였음
-            session($user->only('id'));
-            //intended는 아얘 새로운 redirect를 함(필요없는 정보 싹다 클리어)
-            return redirect()->intended(route('boards.index'));
-        } else {
-            $errors = '인증작업 에러';
-            return redirect()->back()->with('error', $errors);
-        }
-    }
+    
 
     function logout() {
         //세션 파기
