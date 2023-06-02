@@ -61,6 +61,7 @@ class UserController extends Controller
             //session에 넣기
             //session에 인증된 회원 pk 등록, session에 id넣음
             //session에 id저장하는 거를 처음에 배열로 넣어서 loginpost를 못가져왔던 거였음
+            //로그인 성공
             session($user->only('id'));
             //intended는 아얘 새로운 redirect를 함(필요없는 정보 싹다 클리어)
             return redirect()->intended(route('boards.index'));
@@ -69,7 +70,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', $errors);
         }
     }
-    
+
     function registration() {
         return view('registration');
     }

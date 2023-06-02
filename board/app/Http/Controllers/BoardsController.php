@@ -182,6 +182,7 @@ class BoardsController extends Controller
             return redirect()
             // 우리한테 요청한 페이지로 다시 되돌아감(여기선 edit페이지)
                 ->back() 
+                //에러가 발생하면 에러값 넣어줌
                 ->withErrors($validator)
                 // 우리가 받은 리퀘스트 객체를 세션에다 올리고 그 세션을 가져옴 
                 ->withInput($request->only('title', 'content')); 
@@ -211,6 +212,7 @@ class BoardsController extends Controller
         //여기서 with필요없음 : show에서 id만 받게 되니까 id는 세그먼트 파라미터(로 board의 값을 받음)
         //니까 세그먼트 파라미터만 받으면 됨
         // return redirect('/boards/'.$id)->with('data', Boards::findOrFail($id));
+        //route:list에서 'boards.show'를 보면 같이 보낼 파라미터 값이 있어서 보내줘야함
         return redirect()->route('boards.show', ['board' => $id]);
         //다른 방법
         // return redirect()->route('boards.show', ['board' => $id])->with('data', Boards::findOrFail($id));
